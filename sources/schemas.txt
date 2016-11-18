@@ -1,0 +1,24 @@
+Only entries for the USA?
+
+Information we have:
+
+ufo-db: (Date/Time, City, State, Shape, Duration, Summary, Posted, additionalText)
+
+airports: (airportID, name, city, country, IATAFFA, ICAO, latitude, longitude, altitude, timezone, DST, Tz)
+
+locations: (RecordNumber, ZipCode, ZipCodeType, City, State, LocationType, Lat, Long, Xaxis, Yaxis, Zaxis, WorldRegion, Country, LocationText, Location, Decommisioned, TaxReturnFiled, EstimatedPopulation, TotalWages, Notes)
+		
+
+
+Information we need:
+
+ufo-db:(tdate, cityID, shapeID, duration, summary, href)
+
+cities (cityID, name, stateID, lat, lon)
+
+shapes(shapeID, name)
+states (stateID, name)
+
+airports: (airportsid, name, Lat, Lon)
+
+

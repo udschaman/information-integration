@@ -1,0 +1,26 @@
+select distinct t1.*, country from (select city, state, count(id) as cnt from scrapeddata
+where state <> 'NULL'
+group by city, state
+order by cnt desc) as t1 LEFT JOIN locations
+ON lower(t1.city)=lower(locations.city) and lower(t1.state)=lower(locations.state)
+order by cnt desc
+
+
+
+select temp.*, l.country from (select distinct city, state, COUNT(id) as cnt from scrapeddata where state <> 'NULL' group by city, state) temp left join (select distinct state, country from locations) l
+on lower(l.state)=lower(temp.state)
+where country = 'US'
+order by temp.cnt desc
+
+select sd.*, f.country from scrapeddata sd join (
+select temp.*, l.country from (select distinct city, state from scrapeddata where state <> 'NULL') temp left join (select distinct state, country from locations) l
+on lower(l.state)=lower(temp.state)
+where country = 'US') as f
+on lower(sd.state) = lower(f.state) and lower(sd.city) = lower(f.city)
+order by sd.city
+
+select lat, lon, COUNT(DISTINCT lower(city)) as cnt from locations
+where locationtype='PRIMARY'
+group by lat, lon
+having COUNT(DISTINCT lower(city))>1
+order by cnt desc

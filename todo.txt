@@ -1,0 +1,3 @@
+- clean locations-source (only official states 50, locationtype PRIMARY)
+- build the shape dictonary
+- unify the duration ufo sightings (at inserting time)

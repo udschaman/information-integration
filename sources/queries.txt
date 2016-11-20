@@ -24,3 +24,20 @@ where locationtype='PRIMARY'
 group by lat, lon
 having COUNT(DISTINCT lower(city))>1
 order by cnt desc
+
+
+
+
+
+
+
+
+## created airports_cleaned from airports:
+
+INSERT INTO airports_cleaned (name, lat, lon)
+SELECT DISTINCT lower(a.name), a.latitude, a.longitude FROM airports as a
+where country='United States'
+
+
+
+

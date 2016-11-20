@@ -30,6 +30,30 @@ order by cnt desc
 
 
 
+##created locations_garbage from locations
+
+insert into locations_garbage(name, lat, lon, state)
+select DISTINCT lower(l.city), l.lat, l.lon, l.state from (select lat, lon, COUNT(DISTINCT lower(city)) as cnt from locations
+where locationtype='PRIMARY'
+and state = ANY ('{AK,AL,AR,AZ,CA,CO,CT,DE,FL,GA,HI,IA,ID,IL,IN,KS,KY,LA,MA,MD,ME,MI,MN,MO,MS,MT,NC,ND,NE,NH,NJ,NM,NV,NY,OH,OK,OR,PA,RI,SC,SD,TN,TX,UT,VA,VT,WA,WI,WV,WY}'::text[])
+group by lat, lon
+having COUNT(DISTINCT lower(city)) > 1
+order by cnt desc
+) dt, locations as l
+where dt.lat=l.lat and dt.lon=l.lon and l.locationtype='PRIMARY'
+
+
+##created locations_cleaned from locations
+
+insert into locations_cleaned(name, lat, lon, state)
+select DISTINCT lower(l.city), l.lat, l.lon, l.state from (select lat, lon, COUNT(DISTINCT lower(city)) as cnt from locations
+where locationtype='PRIMARY'
+and state = ANY ('{AK,AL,AR,AZ,CA,CO,CT,DE,FL,GA,HI,IA,ID,IL,IN,KS,KY,LA,MA,MD,ME,MI,MN,MO,MS,MT,NC,ND,NE,NH,NJ,NM,NV,NY,OH,OK,OR,PA,RI,SC,SD,TN,TX,UT,VA,VT,WA,WI,WV,WY}'::text[])
+group by lat, lon
+having COUNT(DISTINCT lower(city)) = 1
+order by cnt desc
+) dt, locations as l
+where dt.lat=l.lat and dt.lon=l.lon and l.locationtype='PRIMARY'
 
 
 ## created airports_cleaned from airports:
@@ -37,7 +61,3 @@ order by cnt desc
 INSERT INTO airports_cleaned (name, lat, lon)
 SELECT DISTINCT lower(a.name), a.latitude, a.longitude FROM airports as a
 where country='United States'
-
-
-
-

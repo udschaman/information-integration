@@ -36,7 +36,7 @@ def bulkInsert(query, tuples, connStr):
       if conn:
          conn.close()
 
-connection = "dbname='xxx' user='user' host='localhost' password='123456'"
+connection = "dbname='ufos' user='postgres' host='localhost' password='Freakin666!'"
 
 executeSingleQuery("CREATE TABLE IF NOT EXISTS States(state_id SERIAL PRIMARY KEY, code TEXT, name TEXT);", connection)
 

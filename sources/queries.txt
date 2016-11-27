@@ -28,6 +28,28 @@ order by cnt desc
 
 
 
+select distinct s.city, s.state from scrapeddata s join (
+
+select distinct city, state from locations
+where locationtype='PRIMARY'
+group by city, state
+having MAX(lat)-MIN(lat)> 0.2 or MAX(lon)-MIN(lon)>0.2) t
+on lower(s.city)=lower(t.city) and lower(s.state)=lower(t.state) 
+order by city,state
+
+select distinct regexp_replace(regexp_replace(city, '\(.*\)', ''), '/.*', '') as city, state from scrapeddata
+where state in (select distinct code from states)
+order by city
+
+select distinct city, state, AVG(lat) as lat, AVG(lon) as lon from locations
+where locationtype='PRIMARY'
+group by city, state
+having MAX(lat)-MIN(lat)< 0.2 or MAX(lon)-MIN(lon)<0.2
+order by city, state
+
+--select to_timestamp(date_time, 'MM/DD/YY HH24:MI') from scrapeddata
+
+SELECT regexp_matches(date_time, '\d{1,2}/\d{1,2}/\d{1,2} \d{1,2}:\d{1,2}') from (select * from scrapeddata where state in (select distinct code from states)) f
 
 
 ##created locations_garbage from locations
@@ -41,6 +63,18 @@ having COUNT(DISTINCT lower(city)) > 1
 order by cnt desc
 ) dt, locations as l
 where dt.lat=l.lat and dt.lon=l.lon and l.locationtype='PRIMARY'
+
+
+select s.date_time, s.city, s.state, t.lat, t.lon from (
+
+select distinct date_time, regexp_replace(regexp_replace(city, '\(.*\)', ''), '/.*', '') as city, state from scrapeddata
+where state in (select distinct code from states)
+
+) s join (select distinct city, state, AVG(lat) as lat, AVG(lon) as lon from locations
+
+group by city, state
+order by city, state) t
+on lower(s.city)=lower(t.city) and lower(s.state)=lower(t.state) 
 
 
 ##created locations_cleaned from locations

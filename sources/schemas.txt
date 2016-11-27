@@ -17,8 +17,7 @@ ufo-db:(tdate, cityID, shapeID, duration, summary, href)
 cities (cityID, name, stateID, lat, lon)
 
 shapes(shapeID, name)
+
 states (stateID, name)
 
 airports: (airportsid, name, Lat, Lon)
-
-

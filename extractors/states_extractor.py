@@ -1,48 +1,13 @@
 import json
-import psycopg2
+import utils.db_utils as util
+from extractors import extractdb
 
-def executeSingleQuery(query, connStr):
-   try:
-      conn = psycopg2.connect(connStr)
-      cur = conn.cursor()
-      cur.execute(query)
-      conn.commit()
-   except Exception as e:
-      if conn:
-         conn.rollback()
+util.executeSingleInsertOrCreate("CREATE TABLE IF NOT EXISTS states(state_id SERIAL PRIMARY KEY, code TEXT, name TEXT);", extractdb)
 
-      print('Error %s' % e)
-      sys.exit(1)
+util.executeSingleInsertOrCreate("SELECT setval('states_state_id_seq', 1)", extractdb)
+util.executeSingleInsertOrCreate("DELETE FROM states", extractdb)
 
-   finally:
-      if conn:
-         conn.close()
-
-
-def bulkInsert(query, tuples, connStr):
-   try:
-      conn = psycopg2.connect(connStr)
-      cur = conn.cursor()
-      cur.executemany(query, tuples)
-      conn.commit()
-   except Exception as e:
-      if conn:
-         conn.rollback()
-
-      print('Error %s' % e)
-      sys.exit(1)
-
-   finally:
-      if conn:
-         conn.close()
-
-connection = "dbname='ufos' user='postgres' host='localhost' password='Freakin666!'"
-
-executeSingleQuery("CREATE TABLE IF NOT EXISTS States(state_id SERIAL PRIMARY KEY, code TEXT, name TEXT);", connection)
-
-executeSingleQuery("DELETE FROM States", connection)
-
-query = "INSERT INTO States (code, name) VALUES (%s, %s)"
+query = "INSERT INTO states (code, name) VALUES (%s, %s)"
 
 try:
    num = 0
@@ -55,7 +20,7 @@ try:
       t += (key,)
       t += (value,)
       rowsList.append(t)
-   bulkInsert(query, rowsList, connection)
+   util.bulkInsert(query, rowsList, extractdb)
    num += len(rowsList)
 except Exception as e:
    print(e)

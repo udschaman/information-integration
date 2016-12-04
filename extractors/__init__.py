@@ -1,0 +1,1 @@
+extractdb = "dbname='extractdb' user='infint' host='localhost' password='infint'"

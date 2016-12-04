@@ -1,45 +1,36 @@
-##
-# Call arguments: path to csv/dat file, database-name (have to exist), username with write access for db, password for the user    
-##
 import csv
-import sys
-import psycopg2
+import utils.db_utils as util
+import os
+import datetime
+from extractors import extractdb
+from timeit import default_timer as timer
 
 
-dataset = open(sys.argv[1], 'r')
+createAirportsTable = "CREATE TABLE IF NOT EXISTS airports(airport_id TEXT, name TEXT, city TEXT, country TEXT, iatafaa VARCHAR(3), icao VARCHAR(4), latitude DOUBLE PRECISION, longitude DOUBLE PRECISION, altitude INTEGER, timezone DOUBLE PRECISION, dst VARCHAR(1), tz TEXT);"
+
+util.executeSingleInsertOrCreate(createAirportsTable, extractdb)
+util.executeSingleInsertOrCreate("DELETE FROM airports", extractdb)
 
 try:
-    conn = psycopg2.connect("dbname=" + sys.argv[2] + " user=" + sys.argv[3] + " host='localhost' password=" + sys.argv[4])
-    cursor = conn.cursor();
 
-    query = "CREATE TABLE airports(\"airportID\" TEXT, name TEXT, city TEXT, country TEXT, \"IATAFAA\" VARCHAR(3), \"ICAO\" VARCHAR(4), latitude DOUBLE PRECISION, longitude DOUBLE PRECISION, altitude INTEGER, timezone DOUBLE PRECISION, \"DST\" VARCHAR(1), \"Tz\" TEXT);"
+    insertAirports = "INSERT INTO airports(airport_id, name, city, country, iatafaa, icao, latitude, longitude, altitude, timezone, dst, tz) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);"
 
-    cursor.execute(query)
-    conn.commit()
-
-
-    reader = csv.reader(dataset)
+    dir = os.path.dirname(__file__)
+    filename = os.path.join(dir, '../sources/airports.dat')
+    dataSet = open(filename, 'r')
+    reader = csv.reader(dataSet)
+    rowsList = []
+    start = timer()
     for row in reader:
+        tuple = ()
+        for col in row:
+            tuple += (col,)
+        rowsList.append(tuple)
 
-        airportID = row[0]
-        name = row[1]
-        city = row[2]
-        country = row[3]
-        IATAFAA = row[4]
-        ICAO = row[5]
-        latitude = row[6]
-        longitude = row[7]
-        altitude = row[8]
-        timezone = row[9]
-        DST = row[10]
-        Tz = row[11]
-    
-        query = "INSERT INTO airports(\"airportID\", name, city, country, \"IATAFAA\", \"ICAO\", latitude, longitude, altitude, timezone, \"DST\", \"Tz\") VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);"
-        
-        data = (airportID, name, city, country, IATAFAA, ICAO, latitude, longitude, altitude, timezone, DST, Tz)
-    
-        cursor.execute(query,data)
-
-    conn.commit()
+    util.bulkInsert(insertAirports, rowsList, extractdb)
+    end = timer()
+    totalTime = end - start
 finally:
-    dataset.close()
+    dataSet.close()
+    print("Airports data was successfully extracted")
+    print("Total execution time: " + str(datetime.timedelta(seconds=int(totalTime))))

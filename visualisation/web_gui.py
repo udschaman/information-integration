@@ -23,19 +23,30 @@ class MyServer(BaseHTTPRequestHandler):
 	def do_POST(self):
 		
 		form = cgi.FieldStorage(fp=self.rfile, headers=self.headers, environ={'REQUEST_METHOD':'POST', 'CONTENT_TYPE':self.headers['Content-Type'], })
+		form_value = ""
 
 		if self.path=="/cities":
-			str_response = html_functions.return_cities(form["state"].value)
+			form_value = form["state"].value
+			str_response = html_functions.return_cities(form_value)
 
 		if self.path=="/shapes":
-			str_response = html_functions.return_shapes(form["city"].value)
+			form_value = form["city"].value
+			str_response = html_functions.return_shapes(form_value)
 
 		if self.path=="/airports":
-			str_response = html_functions.return_airports(form["shape"].value)
+			form_value = form["shape"].value
+			str_response = html_functions.return_airports(form_value)
+
 		if self.path=="/date":
-			str_response = html_functions.return_date(form["airport"].value)
+			form_value = form["airport"].value
+			str_response = html_functions.return_date(form_value)
+
 		if self.path=="/result":
-			str_response = html_functions.return_results(form["datepicker"].value)
+			if(len(form.getlist("datepicker")) == 0):
+					form_value = "*"
+			else:
+				form_value = form["datepicker"].value
+			str_response = html_functions.return_results(form_value)
 
 		self.send_response(200)
 		self.end_headers()

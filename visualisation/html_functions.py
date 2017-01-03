@@ -18,10 +18,13 @@ def return_begin():
 				<meta charset="utf-8">
 				<style>
 					html, body { height: 100%; margin: 0; padding: 0; }
-					#map { height: 75%; width: 75%;	}
+					#map { height: 75%; width: 100%;	}
+					table { width:  100%; border-collapse: collapse; }
+        			td, th { border: 1px solid black; }
+        			.scrollingTable { width: 100%; overflow-y: auto; }
 				</style>
 			</head>
-		<body>
+		<body onload="makeTableScroll();">
 	"""
 	return begin
 
@@ -33,34 +36,97 @@ def return_end():
 	return end
 
 
-###########################
-def return_heatmap():
-	heatmap = """
-		<h1>Heatmap of all sightings</h1>
-	"""
-	return heatmap
-	
+###########################	
 def return_wikipedia():
 	city_wiki = """
 		<h1>Wikipedia article of the city</h1>
 	"""
 	return city_wiki
 
+#######################
+
+def return_sightings():
+	db_sightings = ui.get_sightings(selected_date, selected_city, selected_state, selected_shape)
+
+	web_sightings = ""
+	for element in db_sightings:
+
+		if("*" in selected_date):
+			web_date = "<td>" + str(element[3])  + "</td>"
+		else:
+			web_date = "<td>" + selected_date  + "</td>"
+
+		web_city = "<td>" + selected_city + "</td>"
+		web_state = "<td>" + selected_state + "</td>"
+		
+		if("*" in selected_shape):
+			web_shape = "<td>" + element[-1]  + "</td>"
+		else:
+			web_shape = "<td>" + selected_shape  + "</td>"
+
+		web_duration = "<td>" + element[0]  + "</td>"
+		web_summary = "<td>" + element[1] + "</td>"
+		web_link = "<td>" + element[2] + "</td>"
+
+
+		web_sightings = web_sightings + "<tr>" + web_date + web_city + web_state + web_shape + web_duration + web_summary + web_link + "</tr>"
+
+	sightings = """
+		<h1>All """ + str(len(db_sightings)) + """ sightings for """ + selected_city + """, """ + selected_state + """</h1>
+		<script type="text/javascript">
+	        function makeTableScroll() {
+	            var maxRows = 25;
+
+	            var table = document.getElementById('myTable');
+	            var wrapper = table.parentNode;
+	            var rowsInTable = table.rows.length;
+	            var height = 0;
+	            if (rowsInTable > maxRows) {
+	                for (var i = 0; i < maxRows; i++) {
+	                    height += table.rows[i].clientHeight;
+	                }
+	                wrapper.style.height = height + "px";
+	            }
+	        }
+    	</script>
+	    <div class="scrollingTable">
+	        <table id="myTable">
+	            <tr>
+	                <th>Date</th>
+	                <th>City</th>
+	                <th>State</th>
+	                <th>Shape</th>
+	                <th>Duration</th>
+	                <th>Summary</th>
+	                <th>Link</th>
+	            </tr>""" + web_sightings + """	            
+	        </table>
+	    </div>
+	"""
+	return sightings
+
 def return_gm():
 	lat = ui.get_lat(selected_state, selected_city)
 	lon = ui.get_lon(selected_state, selected_city)
 
 	airports = ui.get_airports(selected_airports, lat[0][0], lon[0][0])
+	all_lat_lon = ui.get_all_lat_lon()
+
+	heatmap_elements = ""
+
+	for element in all_lat_lon:
+		heatmap_elements = heatmap_elements + "{location: new google.maps.LatLng(" + str(element[0]) + ", " + str(element[1]) + "), weight: " + str(element[2]) + "},"
+
+	heatmap_elements = heatmap_elements[:-1]
 
 	html_airports = ""
-
 	for element in airports:
 		html_airports = html_airports + "[\"" + str(element[0]) + "\", " + str(element[1]) + ", " + str(element[2]) + "],"
 	
 	html_airports = html_airports[:-1]
 
 	show_map = """
-		<h1>Google Map of the city with the airports in the choosen area</h1>
+		<h1>Heatmap for all sightings and the map for """ + selected_city + """,""" + selected_state + """ and the airports in the area</h1>
 		<div id="map"></div>
 		<script>
 			function initMap() {
@@ -70,6 +136,13 @@ def return_gm():
 					zoom: 8,
 				   	scaleControl: true
 				});
+
+				var heatmap = new google.maps.visualization.HeatmapLayer({
+            		data: getPoints(),
+            		map: map,
+            		radius : 20
+          		});
+
 				var marker = new google.maps.Marker({
 					position: location,
 					map: map,
@@ -89,27 +162,22 @@ def return_gm():
 					});
 				}
 			}
+
+			function getPoints() {
+          		return [ """ + heatmap_elements + """  ];
+        	}
 		</script>
-		<script src="https://maps.googleapis.com/maps/api/js?&callback=initMap" 
+		<script src="https://maps.googleapis.com/maps/api/js?libraries=visualization&callback=initMap" 
 			async defer></script>
 	"""
 
 	return show_map
 
-def return_sightings():
-	sightings = """
-		<h1>All sightings for the choosen city</h1>
-	"""
-	return sightings
-
-
-#######################
-
 def return_results(date):
 	global selected_date
 	selected_date = date
 
-	result = return_begin() + return_sightings() + return_heatmap() + return_gm() + return_wikipedia() + return_end()
+	result = return_begin() + return_sightings() + return_gm() + return_wikipedia() + return_end()
 	return result
 
 def return_date(airport):
@@ -117,7 +185,7 @@ def return_date(airport):
 	selected_airports = airport
 	
 	date = return_begin() + """
-		<h1>Select a Date</h1>
+		<h1>Select a Date or leave empty for all Dates</h1>
 
 		<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css">
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>

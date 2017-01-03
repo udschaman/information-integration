@@ -1,6 +1,7 @@
 import utils.db_utils as db_util
 from integration import integratedb
 import os
+from dateutil import parser
 
 def get_cities(state_name):
 	state_id = db_util.executeSelect("SELECT state_id FROM states WHERE state_name = '" + state_name + "'", integratedb)[0][0]
@@ -35,7 +36,27 @@ def get_airports(area, lat, lon):
 		airports = db_util.executeSelect("SELECT airport_name, lat, lon FROM airports WHERE lat >= " + str(lat - area) + " AND lat <= " + str(lat + area) + " AND lon >= " + str(lon - area) + " AND lon <= " + str(lon + area) , integratedb)
 
 	return airports
+
+def get_sightings(date, city, state, shape):
+    state_id = db_util.executeSelect("SELECT state_id FROM states WHERE state_name = '" + state + "'", integratedb)[0][0]
+    city_id = db_util.executeSelect("SELECT city_id FROM cities WHERE city_name = '" + city + "' AND state_id = " + str(state_id), integratedb)[0][0]
+    if("*" not in shape):
+        shape_id = db_util.executeSelect("SELECT shape_id FROM shapes WHERE shape_name = '" + shape + "'", integratedb)[0][0]
+
+    if("*" in date and "*" in shape):
+        sightings = db_util.executeSelect("SELECT duration, summary, url, tdate, shape_name FROM ufosightings u, shapes s WHERE s.shape_id = u.shape_id AND city_id = " + str(city_id), integratedb)    
+    elif("*" in date and "*" not in shape):
+        sightings = db_util.executeSelect("SELECT duration, summary, url, tdate FROM ufosightings WHERE city_id = " + str(city_id) + " AND shape_id = " + str(shape_id), integratedb)    
+    elif("*" not in date and "*" in shape):
+        sightings = db_util.executeSelect("SELECT duration, summary, url, shape_name FROM ufosightings u, shapes s WHERE s.shape_id = u.shape_id AND city_id = " + str(city_id) + " AND tdate >= '" + str(parser.parse(str(date + " 00:00:00"))) + "'AND tdate <= '" + str(parser.parse(str(date + " 23:59:59"))) + "'", integratedb)    
+    else:
+        sightings = db_util.executeSelect("SELECT duration, summary, url FROM ufosightings WHERE city_id = " + str(city_id) + " AND shape_id = " + str(shape_id) + " AND tdate >= '" + str(parser.parse(str(date + " 00:00:00"))) + "'AND tdate <= '" + str(parser.parse(str(date + " 23:59:59"))) + "'", integratedb)
 	
+    return sightings
+
+def get_all_lat_lon():
+    lat_lon = db_util.executeSelect("Select lat, lon, SUM(pre_sel.counter) AS sum FROM (SELECT DISTINCT lat, lon, COUNT(u.city_id) AS counter FROM ufosightings u, cities c where u.city_id = c.city_id GROUP BY u.city_id, lat, lon) AS pre_sel GROUP BY lat, lon", integratedb)
+    return lat_lon
 
 
 state_dict = {"AL" : "Alabama",

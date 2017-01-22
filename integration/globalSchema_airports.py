@@ -7,7 +7,7 @@ util.executeSingleInsertOrCreate("CREATE TABLE IF NOT EXISTS airports(airport_id
 util.executeSingleInsertOrCreate("SELECT setval('airports_airport_id_seq', 1)", integratedb)
 util.executeSingleInsertOrCreate("DELETE FROM airports", integratedb)
 
-airportList = util.executeSelect("SELECT DISTINCT lower(name) AS name, latitude, longitude FROM airports WHERE country = 'United States' ORDER BY name", extractdb)
+airportList = util.executeSelect("SELECT lower(name) AS name, latitude, longitude FROM airports WHERE country = 'United States' ORDER BY name", extractdb)
 
 insertAirports = "INSERT INTO airports (airport_name, lat, lon) VALUES (%s, %s, %s)"
 

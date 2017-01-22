@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>UFO Sightings</title>
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/css/sb-admin.css" rel="stylesheet">
+    <link href="/static/css/plugins/morris.css" rel="stylesheet">
+    <link href="/static/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body>
+    <div id="wrapper">
+        <!-- Navigation -->
+        <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">            
+            <!-- Sidebar Menu Items - These collapse to the responsive navigation menu on small screens -->
+            <div class="collapse navbar-collapse navbar-ex1-collapse">
+                <ul class="nav navbar-nav side-nav">
+                    <li class="active">
+                        <a href="index.html">Overview</a>
+                    </li>
+                    <li>
+                        <a href="tables.html">Sightings per State</a>
+                    </li>
+                    <li>
+                        <a href="blank-page.html">Cities and Airports</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <div id="page-wrapper">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <h1 class="page-header">
+                            UFO Sightings <small>Sightings per State</small>
+                        </h1>
+                    </div>
+                </div>
+
+
+                <div class="row">
+                    <div class="col-lg-12">
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <h3 class="panel-title">Select a State:</h3>
+                                </div>
+                                <div class="panel-body">
+                                   <form name="state" action="tables.html" method='POST'>
+                                        <select name="state">
+
+                                            {% for value in state_selection %}
+                                                <option value="{{ value }}">{{ value }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        <button type="submit">Select a State</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="row">
+                    <div class="col-lg-12">
+                        {% if state_value %}
+                            <h2> {{ amount_sightings }} sightings for {{ state_value }} </h2>
+                        {% else %}
+                            <h2>Sightings</h2>
+                        {% endif %}
+                        <div class="table-responsive">
+                            <input type="text" id="cityInput" onkeyup="searchCity()" placeholder="Search for a City.." title="Type in a City name">
+                            <input type="text" id="dateInput" onkeyup="searchDate()" placeholder="Search for a Date.." title="Type in a Date">
+                            <input type="text" id="shapeInput" onkeyup="searchShape()" placeholder="Search for a Shape.." title="Type in a Shape name">
+                            <table class="table table-bordered table-hover" id="myTable">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>City</th>
+                                        <th>State</th>
+                                        <th>Shape</th>
+                                        <th>Duration</th>
+                                        <th>Summary</th>
+                                        <th>Link</th>
+                                    </tr>
+                                </thead>
+                                {% if state_value %}
+                                <tbody>
+                                    {% for value in states %}
+                                    <tr>
+                                        <th>{{ value[0] }}</th>
+                                        <th>{{ value[1] }}</th>
+                                        <th>{{ value[2] }}</th>
+                                        <th>{{ value[3] }}</th>
+                                        <th>{{ value[4] }}</th>
+                                        <th>{{ value[5] }}</th>
+                                        <th>{{ value[6] }}</th>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>    
+                                {% endif %}
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/jquery.js"></script>
+    <script src="/static/js/bootstrap.min.js"></script>
+    <script src="/static/js/plugins/morris/raphael.min.js"></script>
+    <script src="/static/js/plugins/morris/morris.min.js"></script>
+    <script src="/static/js/plugins/morris/shape-data.js"></script>
+    <script src="/static/js/plugins/morris/state-data.js"></script>
+    <script src="/static/js/plugins/morris/date-data.js"></script>
+    <script>
+        function searchCity() {
+          var input, filter, table, tr, td, i;
+          input = document.getElementById("cityInput");
+          filter = input.value.toUpperCase();
+          table = document.getElementById("myTable");
+          tr = table.getElementsByTagName("tr");
+          for (i = 0; i < tr.length; i++) {
+            td = tr[i].getElementsByTagName("th")[1];
+            if (td) {
+              if (td.innerHTML.toUpperCase().indexOf(filter) > -1) {
+                tr[i].style.display = "";
+              } else {
+                tr[i].style.display = "none";
+              }
+            }       
+          }
+        }
+    </script>
+    <script>
+        function searchDate() {
+          var input, filter, table, tr, td, i;
+          input = document.getElementById("dateInput");
+          filter = input.value.toUpperCase();
+          table = document.getElementById("myTable");
+          tr = table.getElementsByTagName("tr");
+          for (i = 0; i < tr.length; i++) {
+            td = tr[i].getElementsByTagName("th")[0];
+            if (td) {
+              if (td.innerHTML.toUpperCase().indexOf(filter) > -1) {
+                tr[i].style.display = "";
+              } else {
+                tr[i].style.display = "none";
+              }
+            }       
+          }
+        }
+    </script>
+    <script>
+        function searchShape() {
+          var input, filter, table, tr, td, i;
+          input = document.getElementById("shapeInput");
+          filter = input.value.toUpperCase();
+          table = document.getElementById("myTable");
+          tr = table.getElementsByTagName("tr");
+          for (i = 0; i < tr.length; i++) {
+            td = tr[i].getElementsByTagName("th")[3];
+            if (td) {
+              if (td.innerHTML.toUpperCase().indexOf(filter) > -1) {
+                tr[i].style.display = "";
+              } else {
+                tr[i].style.display = "none";
+              }
+            }       
+          }
+        }
+    </script>
+
+
+</body>
+</html>

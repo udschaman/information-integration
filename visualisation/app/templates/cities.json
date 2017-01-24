@@ -1,0 +1,6 @@
+[
+""
+{% for city in city_selection %}
+    ,"{{ city[0] }}"
+{% endfor %}
+]

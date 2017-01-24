@@ -4,6 +4,7 @@ import sys
 import time
 import fileinput
 import os
+import collections
 
 heatmap_dir = os.path.abspath(os.path.dirname(__file__))
 heatmap_dir = heatmap_dir[:-4] + "templates/site_elements/heatmap.html"
@@ -74,3 +75,39 @@ def tables():
 
 		return render_template('tables.html', state_value=state, state_selection=state_selection, states=states, amount_sightings=amount_sightings)	
 
+@main.route('/cities.json', methods=['GET'])
+def cities():
+
+	state=request.args.get('state')
+
+	city_per_state = ui.get_cities_per_state(state)
+
+	if request.method == 'GET':
+		return render_template('cities.json', city_selection=city_per_state)
+
+@main.route('/airports.html', methods=['GET', 'POST'])
+def airports():
+
+	state_selection = ui.get_states()
+	area_selection = ui.area_range
+
+	if request.method == 'GET':
+		return render_template('airports.html', state_selection=state_selection, area_selection=area_selection)
+
+	if request.method == 'POST':
+
+		state_form = str(escape(request.form['state']))
+		city_form = str(escape(request.form['city']))
+		area_form = escape(request.form['area'])
+
+
+		lat = ui.get_lat(state_form, city_form)
+		lon = ui.get_lon(state_form, city_form)
+		db_airports = ui.get_airports(area_form, lat[0][0], lon[0][0])
+
+		airports = ""
+		for element in db_airports:
+			airports = airports + "[\"" + str(element[0]) + "\", " + str(element[1]) + ", " + str(element[2]) + "],"		
+		airports = airports[:-1]
+
+		return render_template('airports.html', state_selection=state_selection, area_selection=area_selection, city_name=city_form, airports=airports, lat=lat[0][0], lon=lon[0][0])

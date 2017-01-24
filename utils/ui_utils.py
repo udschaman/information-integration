@@ -104,11 +104,18 @@ def get_states():
 	return state_list
 
 def get_state_sightings(state):
-
 	state_id = db_util.executeSelect("SELECT state_id FROM states WHERE state_name = '" + state + "'", integratedb)[0][0]
-
 	sightings = db_util.executeSelect("SELECT tdate, city_name, state_name, s.shape_name, duration, summary, url FROM ufosightings u,  shapes s, (SELECT city_name, c.city_id, state_name  FROM cities c, (SELECT state_name, state_id FROM states WHERE state_name = \'" + state + "\') as state WHERE c.state_id = state.state_id) as city WHERE u.city_id in (city.city_id) AND u.shape_id = s.shape_id", integratedb)
 	return sightings
+
+def get_state_city_dict():
+	state_cities = db_util.executeSelect("SELECT state_name, city_name FROM cities c, states s WHERE s.state_id = c.state_id", integratedb)
+	return state_cities
+
+def get_cities_per_state(state_name):
+	state_id = db_util.executeSelect("SELECT state_id FROM states WHERE state_name = '" + state_name + "'", integratedb)[0][0]
+	cities = db_util.executeSelect("SELECT city_name FROM cities WHERE state_id = " + str(state_id) + " ORDER BY city_name", integratedb)
+	return cities
 
 
 state_dict = {"AL" : "Alabama",
